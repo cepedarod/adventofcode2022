@@ -10,7 +10,6 @@ with open(input_file, 'r') as f:
 #-----------------------------------------------------
 # Part 1
 #-----------------------------------------------------
-'''
 largest_sum = 0
 current_sum = 0
 for item in lines:
@@ -19,8 +18,8 @@ for item in lines:
         if current_sum > largest_sum: largest_sum = current_sum
         current_sum = 0
 
-print("largest sum: ", largest_sum)
-'''
+print("Part 1 answer: ", largest_sum)
+
 #-----------------------------------------------------
 # Part 2
 #-----------------------------------------------------
