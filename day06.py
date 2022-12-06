@@ -33,3 +33,19 @@ for answer, letter in enumerate(input):
         break
     while letter in code: code = code[1:]
     code.append(letter)
+
+#-----------------------------------------------------
+# Bonus! Solution 2.0
+#-----------------------------------------------------
+def solve(target_length):
+    code = []
+    for answer, letter in enumerate(input):
+        if len(code) == target_length:
+            print("Answer : ", answer)
+            break
+        while letter in code: code = code[1:]
+        code.append(letter) 
+
+print("## Solution 2.0 ##")
+solve(4)
+solve(14)
