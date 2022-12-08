@@ -27,19 +27,31 @@ def make_key(x, y, direction):                                      # used to na
     elif direction == 'left': return str(x-1) + '-' + str(y)
     elif direction == 'right': return str(x+1) + '-' + str(y)
 
+def tree_on_edge(key):                                                      # Determine if given coordinate is on an edge
+    if (key.startswith('0-') or 
+        key.endswith('-0') or 
+        key.startswith(str(x_max)) or 
+        key.endswith(str(y_max))
+        ):
+            return True
+    else: return False
+
 def is_visible(tree_node, hight, direction):
     if direction == 'left':
         if tree_node.size == -1: return True
         elif tree_node.size >= hight: return False
         else: return is_visible(tree_node.left, hight, direction)
+
     elif direction == 'right':
         if tree_node.size == -1: return True
         elif tree_node.size >= hight: return False
         else: return is_visible(tree_node.right, hight, direction)
+
     if direction == 'up':
         if tree_node.size == -1: return True
         elif tree_node.size >= hight: return False
         else: return is_visible(tree_node.up, hight, direction)
+
     elif direction == 'down':
         if tree_node.size == -1: return True
         elif tree_node.size >= hight: return False
@@ -50,14 +62,17 @@ def view_distance(tree_node, hight, view_range, direction):
         if tree_node.size == -1: return view_range
         elif tree_node.size >= hight: return view_range + 1
         else: return view_range + view_distance(tree_node.left, hight, view_range, direction) + 1
+
     elif direction == 'right':
         if tree_node.size == -1: return view_range
         elif tree_node.size >= hight: return view_range + 1
         else: return view_range + view_distance(tree_node.right, hight, view_range, direction) + 1
+
     if direction == 'up':
         if tree_node.size == -1: return view_range
         elif tree_node.size >= hight: return view_range + 1
         else: return view_range + view_distance(tree_node.up, hight, view_range, direction) + 1
+
     elif direction == 'down':
         if tree_node.size == -1: return view_range
         elif tree_node.size >= hight: return view_range + 1
@@ -82,6 +97,7 @@ for y, row_of_trees in enumerate(lines):
 for key in all_trees:
     x = int(key.split('-')[0])
     y = int(key.split('-')[1])
+
     # x axis adjacencies
     if int(x) == 0: 
         all_trees[key].left = tree(-1)
@@ -92,6 +108,7 @@ for key in all_trees:
     else:
         all_trees[key].left = all_trees[make_key(x,y,"left")]
         all_trees[key].right = all_trees[make_key(x,y,"right")]
+
     # y axis adjacencies
     if int(y) == 0: 
         all_trees[key].up = tree(-1)
@@ -106,8 +123,7 @@ for key in all_trees:
 # Calculate Part 1 Answer    
 total_visible_trees = 0
 for key in all_trees:
-    if key.startswith('0-') or key.endswith('-0') or key.startswith(str(x_max)) or key.endswith(str(y_max)):        # If edge tree
-        total_visible_trees += 1
+    if tree_on_edge(key): total_visible_trees += 1
 
     elif (
         is_visible(all_trees[key].left, all_trees[key].size, 'left') or
@@ -123,12 +139,7 @@ print("Answer 1: ", total_visible_trees)
 #-----------------------------------------------------
 best_tree = 0
 for key in all_trees:
-    # If not edge
-    if (not key.startswith('0-') and 
-        not key.endswith('-0') and  
-        not key.startswith(str(x_max)) and  
-        not key.endswith(str(y_max))
-    ):
+    if not tree_on_edge(key):
         range_l = view_distance(all_trees[key].left, all_trees[key].size, 0, 'left')
         range_r = view_distance(all_trees[key].right, all_trees[key].size, 0, 'right')
         range_u = view_distance(all_trees[key].up, all_trees[key].size, 0, 'up')
