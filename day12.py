@@ -6,7 +6,6 @@
 #-----------------------------------------------------
 import string
 
-test = 1
 #-----------------------------------------------------
 # Functions & Classes
 #-----------------------------------------------------
@@ -56,73 +55,32 @@ def find_path(node, hight, origin, path_taken, debug_ref):
         #if debug_ref in path_taken: print_path(path_taken)
         return False, path_taken
 
-    elif origin == 'left':
+    else:
         ref_path = path_taken.copy()
         ref_path.append(node)
-        not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, debug_ref)
-        if node.coordinates == '1-1': 
-            i=0
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
 
-        not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, debug_ref)
-        if node.coordinates == '1-1': 
-            i=0
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+        if origin != 'up':
+            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, debug_ref)
+            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
 
-        not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, debug_ref)
-        if node.coordinates == '1-1': 
-            print_path(new_path)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+        if origin != 'right':
+            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, debug_ref)
+            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+            
+        if origin != 'down':
+            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, debug_ref)
+            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
 
-    elif origin == 'right':
-        ref_path = path_taken.copy()
-        ref_path.append(node)
-        not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+        if origin != 'left':
+            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, debug_ref)
+            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
 
-        not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-        not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-    elif origin == 'up':
-        ref_path = path_taken.copy()
-        ref_path.append(node)
-        not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, debug_ref)
-        if node.coordinates == '1-2': 
-            i = 0
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-        not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, debug_ref)
-        #if node.coordinates == '1-1': 
-            #print_path(new_path)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-        not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, debug_ref)
-        if node.coordinates == '1-2': 
-            i = 0
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-        
-
-    elif origin == 'down':
-        ref_path = path_taken.copy()
-        ref_path.append(node)
-        not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-        not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
-        not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, debug_ref)
-        if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-    i = 0
     return False, best_path
 #-----------------------------------------------------
 # Read Input
 #-----------------------------------------------------
-input_file = "input.txt"
-#input_file = "test.txt"
+#input_file = "input.txt"
+input_file = "test.txt"
 with open(input_file, 'r') as f:
     lines = f.read().splitlines()
     #print(lines)
