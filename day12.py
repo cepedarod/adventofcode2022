@@ -16,6 +16,9 @@ class node:
         self.right = ''
         self.down = ''
         self.coordinates = ''
+        self.dead_end = False
+        self.letter = letter
+        self.explored = False
 
         if letter.islower(): self.hight = string.ascii_lowercase.index(letter)
         elif letter == 'E': self.hight = 26
@@ -35,52 +38,67 @@ def print_path(path):
         print(node.coordinates)
 
     print("------------")
-        
 
-def find_path(node, hight, origin, path_taken, debug_ref):
+
+def find_path(node, hight, origin, path_taken, best_path_length):
     dead_end = True
-    best_path = [0] * 10000
+    best_path = [0] * 3000
     new_path = []
-    not_viable = False
-    if node.coordinates == '1-2': 
-            i = 0
+    viable = False
+    node.explored = True
+
     if (node.hight == -1 or 
         node.hight < hight or
         hight - node.hight < -1 or
-        node in path_taken): 
-            return dead_end, path_taken      # Dead End
+        node in path_taken or
+        len(path_taken) + 1 >= best_path_length or 
+        node.dead_end
+        ): 
+            return dead_end, path_taken                 # Dead End
 
-    elif node.hight == 26:                                                      # Found Target
-        #path_taken.append(node)
-        #if debug_ref in path_taken: print_path(path_taken)
-        return False, path_taken
+    elif node.hight == 26: 
+        #print('hit')
+        return False, path_taken     # Found Target
 
     else:
         ref_path = path_taken.copy()
         ref_path.append(node)
 
         if origin != 'up':
-            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, debug_ref)
-            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
-
+            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, len(best_path))
+            if not_viable == False and len(new_path) < len(best_path):
+                viable = True
+                best_path = new_path
+                
         if origin != 'right':
-            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, debug_ref)
-            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, len(best_path))
+            if not_viable == False and len(new_path) < len(best_path):
+                viable = True
+                best_path = new_path
             
         if origin != 'down':
-            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, debug_ref)
-            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, len(best_path))
+            if not_viable == False and len(new_path) < len(best_path):
+                viable = True
+                best_path = new_path
 
         if origin != 'left':
-            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, debug_ref)
-            if not_viable == False and len(new_path) < len(best_path):  best_path = new_path
+            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, len(best_path))
+            if not_viable == False and len(new_path) < len(best_path):
+                viable = True
+                best_path = new_path
 
-    return False, best_path
+    if not viable:
+        node.dead_end = True
+        return dead_end, best_path
+
+    else: return False, best_path
+    
 #-----------------------------------------------------
 # Read Input
 #-----------------------------------------------------
-#input_file = "input.txt"
-input_file = "test.txt"
+input_file = "input.txt"
+#input_file = "test.txt"
 with open(input_file, 'r') as f:
     lines = f.read().splitlines()
     #print(lines)
@@ -130,24 +148,31 @@ for key in all_nodes:
         all_nodes[key].down = all_nodes[make_key(x,y,"down")]
     i = 0
 # Solve
-best_path_length = 10000
-dead_end, new_path = find_path(start_point.left, start_point.hight, 'right', [start_point], all_nodes['1-2'])
+best_path_length = 3000
+dead_end, new_path = find_path(start_point.left, start_point.hight, 'right', [start_point], best_path_length)
 if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
 
-dead_end, new_path = find_path(start_point.up, start_point.hight, 'down', [start_point], all_nodes['1-2'])
+dead_end, new_path = find_path(start_point.up, start_point.hight, 'down', [start_point], best_path_length)
 if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
 
-dead_end, new_path = find_path(start_point.right, start_point.hight, 'left', [start_point], all_nodes['1-2'])
+dead_end, new_path = find_path(start_point.right, start_point.hight, 'left', [start_point], best_path_length)
 if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
 
-dead_end, new_path = find_path(start_point.down, start_point.hight, 'up', [start_point], all_nodes['1-2'])
-b = new_path
+dead_end, new_path = find_path(start_point.down, start_point.hight, 'up', [start_point], best_path_length)
 if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
-'''
-for item in b:
-    for key in all_nodes:
-        if all_nodes[key] == item: 
-            print(key)
-            break
-'''
+
 print(best_path_length)
+row = ''
+row_num = ''
+for y in range(len(lines)):
+    for x in range(len(lines[0])):
+        if all_nodes[f'{x}-{y}'].explored == True: row_num += '$'
+        else: row_num += '.'
+
+        if all_nodes[f'{x}-{y}'] == start_point: row += 'S'
+        elif all_nodes[f'{x}-{y}'].hight == 26: row += 'E'
+        elif all_nodes[f'{x}-{y}'].dead_end: row += '#'
+        else: row += '.'
+    print(row, "     ", row_num)
+    row = ''
+    row_num = ''
