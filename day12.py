@@ -19,11 +19,19 @@ class node:
         self.dead_end = False
         self.letter = letter
         self.explored = False
+        self.best_route = False
+        self.final_path = False
+
+        if letter == 'E': self.dist_to_end = 0
+        else: self.dist_to_end = -1
 
         if letter.islower(): self.hight = string.ascii_lowercase.index(letter)
         elif letter == 'E': self.hight = 26
         elif letter == 'S': self.hight = 0
         else: self.hight = -1
+
+    def make_adjacency_list(self):
+        self.adjacencies = [self.up, self.down, self.left, self.right]
 
 # used to navigate nodes in specific directions
 def make_key(x, y, direction):
@@ -42,14 +50,11 @@ def print_path(path):
 
 def find_path(node, hight, origin, path_taken, best_path_length):
     dead_end = True
-    best_path = [0] * 3000
     new_path = []
     viable = False
     node.explored = True
 
     if (node.hight == -1 or 
-        node.hight < hight or
-        hight - node.hight < -1 or
         node in path_taken or
         len(path_taken) + 1 >= best_path_length or 
         node.dead_end
@@ -64,41 +69,48 @@ def find_path(node, hight, origin, path_taken, best_path_length):
         ref_path = path_taken.copy()
         ref_path.append(node)
 
-        if origin != 'up':
-            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, len(best_path))
-            if not_viable == False and len(new_path) < len(best_path):
+        if origin != 'down' and node.down.hight - node.hight <= 1:
+            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, best_path_length)
+            if not_viable == False and len(new_path) < best_path_length:
                 viable = True
                 best_path = new_path
+                best_path_length = len(best_path)
+        
+        if origin != 'up' and node.up.hight - node.hight <= 1:
+            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, best_path_length)
+            if not_viable == False and len(new_path) < best_path_length:
+                viable = True
+                best_path = new_path
+                best_path_length = len(best_path)
                 
-        if origin != 'right':
-            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, len(best_path))
-            if not_viable == False and len(new_path) < len(best_path):
+        if origin != 'left' and node.left.hight - node.hight <= 1:
+            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, best_path_length)
+            if not_viable == False and len(new_path) < best_path_length:
                 viable = True
                 best_path = new_path
-            
-        if origin != 'down':
-            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, len(best_path))
-            if not_viable == False and len(new_path) < len(best_path):
+                best_path_length = len(best_path)
+        
+        if origin != 'right' and node.right.hight - node.hight <= 1:
+            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, best_path_length)
+            if not_viable == False and len(new_path) < best_path_length:
                 viable = True
                 best_path = new_path
-
-        if origin != 'left':
-            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, len(best_path))
-            if not_viable == False and len(new_path) < len(best_path):
-                viable = True
-                best_path = new_path
+                best_path_length = len(best_path)
+        
 
     if not viable:
         node.dead_end = True
-        return dead_end, best_path
+        return dead_end, path_taken
 
     else: return False, best_path
-    
+
+
+
 #-----------------------------------------------------
 # Read Input
 #-----------------------------------------------------
-input_file = "input.txt"
-#input_file = "test.txt"
+#input_file = "input.txt"
+input_file = "test.txt"
 with open(input_file, 'r') as f:
     lines = f.read().splitlines()
     #print(lines)
@@ -119,6 +131,7 @@ for y, line in enumerate(lines):
         all_nodes[key] = node(n)
         all_nodes[key].coordinates = key
         if n == 'S': start_point = all_nodes[key]
+        elif n == 'E': end_point = all_nodes[key]
 
 # Now that all nodes are in map, link adjecent nodes
 for key in all_nodes:
@@ -146,27 +159,24 @@ for key in all_nodes:
     else:
         all_nodes[key].up = all_nodes[make_key(x,y,"up")]
         all_nodes[key].down = all_nodes[make_key(x,y,"down")]
-    i = 0
+    
+    all_nodes[key].make_adjacency_list()
+
 # Solve
 best_path_length = 3000
-dead_end, new_path = find_path(start_point.left, start_point.hight, 'right', [start_point], best_path_length)
-if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
+dead_end, new_path = find_path(start_point, 0, 'start', [], best_path_length)
 
-dead_end, new_path = find_path(start_point.up, start_point.hight, 'down', [start_point], best_path_length)
-if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
+best_path_length = len(new_path)
 
-dead_end, new_path = find_path(start_point.right, start_point.hight, 'left', [start_point], best_path_length)
-if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
-
-dead_end, new_path = find_path(start_point.down, start_point.hight, 'up', [start_point], best_path_length)
-if not dead_end and len(new_path) < best_path_length: best_path_length = len(new_path)
+for node in new_path:
+    all_nodes[node.coordinates].final_path = True
 
 print(best_path_length)
 row = ''
 row_num = ''
 for y in range(len(lines)):
     for x in range(len(lines[0])):
-        if all_nodes[f'{x}-{y}'].explored == True: row_num += '$'
+        if all_nodes[f'{x}-{y}'].final_path == True: row_num += '$'
         else: row_num += '.'
 
         if all_nodes[f'{x}-{y}'] == start_point: row += 'S'
