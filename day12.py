@@ -48,61 +48,55 @@ def print_path(path):
     print("------------")
 
 
-def find_path(node, hight, origin, path_taken, best_path_length):
-    dead_end = True
-    new_path = []
-    viable = False
+def find_path(node, hight, origin, path_taken, best_path):
     node.explored = True
+    is_viable = False
 
     if (node.hight == -1 or 
         node in path_taken or
-        len(path_taken) + 1 >= best_path_length or 
+        len(path_taken) + 1 >= len(best_path) or 
         node.dead_end
         ): 
-            return dead_end, path_taken                 # Dead End
+            return best_path                 # Dead End
 
-    elif node.hight == 26: 
-        #print('hit')
-        return False, path_taken     # Found Target
+    elif node.hight == 26:
+        if best_path == [] or len(path_taken) < len(best_path):
+            return path_taken
+        else: return best_path     # Found Target
 
     else:
         ref_path = path_taken.copy()
         ref_path.append(node)
 
         if origin != 'down' and node.down.hight - node.hight <= 1:
-            not_viable, new_path = find_path(node.down, node.hight, 'up', ref_path, best_path_length)
-            if not_viable == False and len(new_path) < best_path_length:
-                viable = True
-                best_path = new_path
-                best_path_length = len(best_path)
-        
+            new_path = find_path(node.down, node.hight, 'up', ref_path, best_path)
+            if new_path != best_path: 
+                is_viable = True
+                if len(new_path) < len(best_path): best_path = new_path
+
         if origin != 'up' and node.up.hight - node.hight <= 1:
-            not_viable, new_path = find_path(node.up, node.hight, 'down', ref_path, best_path_length)
-            if not_viable == False and len(new_path) < best_path_length:
-                viable = True
-                best_path = new_path
-                best_path_length = len(best_path)
+            new_path = find_path(node.up, node.hight, 'down', ref_path, best_path)
+            if new_path != best_path: 
+                is_viable = True
+                if len(new_path) < len(best_path): best_path = new_path
                 
         if origin != 'left' and node.left.hight - node.hight <= 1:
-            not_viable, new_path = find_path(node.left, node.hight, 'right', ref_path, best_path_length)
-            if not_viable == False and len(new_path) < best_path_length:
-                viable = True
-                best_path = new_path
-                best_path_length = len(best_path)
+            new_path = find_path(node.left, node.hight, 'right', ref_path, best_path)
+            if new_path != best_path: 
+                is_viable = True
+                if len(new_path) < len(best_path): best_path = new_path
         
         if origin != 'right' and node.right.hight - node.hight <= 1:
-            not_viable, new_path = find_path(node.right, node.hight, 'left', ref_path, best_path_length)
-            if not_viable == False and len(new_path) < best_path_length:
-                viable = True
-                best_path = new_path
-                best_path_length = len(best_path)
-        
+            new_path = find_path(node.right, node.hight, 'left', ref_path, best_path)
+            if new_path != best_path: 
+                is_viable = True
+                if len(new_path) < len(best_path): best_path = new_path
 
-    if not viable:
+    if not is_viable:
         node.dead_end = True
-        return dead_end, path_taken
+        return best_path
 
-    else: return False, best_path
+    else: return best_path
 
 
 
@@ -163,13 +157,14 @@ for key in all_nodes:
     all_nodes[key].make_adjacency_list()
 
 # Solve
-best_path_length = 3000
-dead_end, new_path = find_path(start_point, 0, 'start', [], best_path_length)
+best_path = [0] * 500
+best_path = find_path(start_point, 0, 'start', [], best_path)
 
-best_path_length = len(new_path)
+best_path_length = len(best_path)
+print_path(best_path)
 
-for node in new_path:
-    all_nodes[node.coordinates].final_path = True
+for node in best_path:
+    node.final_path = True
 
 print(best_path_length)
 row = ''
